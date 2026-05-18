@@ -32,10 +32,10 @@ tabs = st.tabs([
     "Sampling (SMOTE)"
 ])
 
-# --- 1. MISSING VALUES ---
-# --- 1. MISSING VALUES (Updated) ---
+
+
 with tabs[0]:
-    st.subheader("🔍 Missing Values Analysis & Handling")
+    st.subheader(" Missing Values Analysis & Handling")
     
     missing_data = df.isnull().sum()
     missing_cols = missing_data[missing_data > 0]
@@ -44,8 +44,8 @@ with tabs[0]:
         st.warning(f"Found {len(missing_cols)} columns with missing values.")
         st.table(missing_cols.rename("Missing Count"))
         
-        # --- Option A: Drop Columns ---
-        st.markdown("### 🗑️ Option 1: Drop Columns or Rows")
+       
+        st.markdown(" Option 1: Drop Columns or Rows")
         cols_to_drop = st.multiselect("Select columns to drop entirely", df.columns)
         drop_na_rows = st.checkbox("Drop rows with any missing values")
         
@@ -61,13 +61,13 @@ with tabs[0]:
 
         st.divider()
 
-        # --- Option B: Imputation ---
-        st.markdown("### 🛠️ Option 2: Impute Missing Values")
+    
+        st.markdown(" Option 2: Impute Missing Values")
         cols_missing = st.multiselect("Select columns to impute", missing_cols.index.tolist(), default=missing_cols.index.tolist())
         
         method = st.selectbox("Imputer Type", ["Simple (Mean/Median/Mode)", "KNN", "Iterative"])
         
-        # تخصيص الخيارات بناءً على نوع الـ Imputer
+        
         if method == "Simple (Mean/Median/Mode)":
             strategy = st.selectbox("Strategy", ["mean", "median", "most_frequent", "constant"])
             fill_value = None
@@ -77,14 +77,12 @@ with tabs[0]:
         if st.button("Apply Imputation"):
             if cols_missing:
                 if method == "Simple (Mean/Median/Mode)":
-                    # ملاحظة: most_frequent (Mode) بتنفع للـ Categorical والـ Numerical
                     imputer = SimpleImputer(strategy=strategy, fill_value=fill_value)
                 elif method == "KNN":
                     imputer = KNNImputer()
                 else:
                     imputer = IterativeImputer()
                 
-                # تنفيذ الـ Imputation
                 df[cols_missing] = imputer.fit_transform(df[cols_missing])
                 st.session_state["data"] = df
                 st.success(f"Imputation applied using {method} strategy!")
@@ -92,14 +90,13 @@ with tabs[0]:
             else:
                 st.error("Please select at least one column.")
     else:
-        st.success("No missing values detected! 🎉")
+        st.success("No missing values detected! ")
 
-# --- 2. ENCODING & NORMALIZATION ---
 with tabs[1]:
     col_enc, col_norm = st.columns(2)
     
     with col_enc:
-        st.subheader("🔢 Data Encoding")
+        st.subheader(" Data Encoding")
         cat_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
         
         if cat_cols:
@@ -118,10 +115,10 @@ with tabs[1]:
                 st.success(f"Encoded {enc_col} successfully!")
                 st.rerun()
         else:
-            st.success("All columns are numeric! No encoding needed. ✅")
+            st.success("All columns are numeric! No encoding needed. ")
 
     with col_norm:
-        st.subheader("⚖️ Normalization & Scaling")
+        st.subheader(" Normalization & Scaling")
         num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
         
         if num_cols:
@@ -130,7 +127,6 @@ with tabs[1]:
             
             if st.button("Run Scaling"):
                 if scale_cols:
-                    # احتفاظ بالداتا قبل الـ Scaling عشان الرسم البياني
                     old_data = df[scale_cols].copy()
                     
                     scaler = StandardScaler() if scale_type == "Standard Scaler" else MinMaxScaler()
@@ -138,15 +134,14 @@ with tabs[1]:
                     
                     st.session_state["data"] = df
                     
-                    # --- جزء الـ Visualization ---
-                    st.write("📈 Visualizing Transformation:")
+                    st.write(" Visualizing Transformation:")
                     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
                     
-                    # قبل الـ Scaling
+                   
                     sns.histplot(old_data, kde=True, ax=ax1)
                     ax1.set_title("Before Scaling")
                     
-                    # بعد الـ Scaling
+                
                     sns.histplot(df[scale_cols], kde=True, ax=ax2)
                     ax2.set_title(f"After {scale_type}")
                     
@@ -154,13 +149,13 @@ with tabs[1]:
                     st.success("Scaling Applied!")
                 else:
                     st.error("Please select columns to scale.")
-# --- 3. OUTLIERS & TRANSFORMATION ---
+
 with tabs[2]:
-    st.subheader("🚀 Transformation & Outliers Handling")
+    st.subheader(" Transformation & Outliers Handling")
     num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
 
-    # --- 1. Visual Detection ---
-    st.markdown("### 📊 Visual Detection")
+  
+    st.markdown(" Visual Detection")
     selected_vis_col = st.selectbox("Select column to visualize outliers", num_cols)
     if selected_vis_col:
         fig, ax = plt.subplots(1, 2, figsize=(12, 4))
@@ -170,8 +165,8 @@ with tabs[2]:
         ax[1].set_title("Distribution")
         st.pyplot(fig)
 
-    # --- 2. Outlier Treatment ---
-    st.markdown("### 🛠️ Outlier Treatment")
+   
+    st.markdown(" Outlier Treatment")
     treatment_method = st.radio("Select Treatment Strategy", ["Detect Only", "Clipping (Manual)", "Winsorization (Percentile)"])
     
     target_outlier_cols = st.multiselect("Select columns to treat", num_cols)
@@ -199,8 +194,8 @@ with tabs[2]:
 
     st.divider()
 
-    # --- 3. Mathematical Transformation ---
-    st.markdown("### 🧬 Mathematical Transformation")
+
+    st.markdown(" Mathematical Transformation")
     trans_cols = st.multiselect("Select columns for transformation", num_cols, key="trans_cols")
     trans_type = st.selectbox("Method", ["Log Transformation", "Box-Cox", "Yeo-Johnson"])
     
@@ -209,11 +204,10 @@ with tabs[2]:
             if trans_type == "Log Transformation":
                 df[trans_cols] = np.log1p(df[trans_cols])
             elif trans_type == "Box-Cox":
-                # Box-Cox requires strictly positive data
+             
                 pt = PowerTransformer(method='box-cox')
                 df[trans_cols] = pt.fit_transform(df[trans_cols] + 0.00001)
             elif trans_type == "Yeo-Johnson":
-                # Yeo-Johnson works with positive and negative data
                 pt = PowerTransformer(method='yeo-johnson')
                 df[trans_cols] = pt.fit_transform(df[trans_cols])
             
@@ -221,102 +215,50 @@ with tabs[2]:
             st.success(f"{trans_type} Applied!")
             st.rerun()
 
-# --- 4. FEATURE SELECTION (RFE) & PCA ---
+
 with tabs[3]:
-    st.subheader("🎯 Professional Feature Selection Hub")
+    st.subheader(" Feature Selection Hub")
     
     target_col = st.selectbox("Select Target Variable (Y)", df.columns, key="fs_target")
     X = df.drop(columns=[target_col])
     y = df[target_col]
 
-    # تجهيز الداتا للحسابات (Encoding مؤقت للـ Categorical)
     X_numeric = X.select_dtypes(include=[np.number])
-    X_encoded = X.copy()
-    for col in X_encoded.select_dtypes(include=['object', 'category']).columns:
-        X_encoded[col] = LabelEncoder().fit_transform(X_encoded[col].astype(str))
-    
-    y_encoded = LabelEncoder().fit_transform(y.astype(str)) if y.dtype == 'object' else y
 
-    method_type = st.radio("Selection Method", ["Filter Methods (Statistical)", "Wrapper (RFE)", "Embedded/PCA"])
+    method_type = st.radio("Selection Method", ["Wrapper (RFE)", "Embedded/PCA"])
 
-    # --- 1. FILTER METHODS ---
-    if method_type == "Filter Methods (Statistical)":
-        stat_choice = st.selectbox("Statistical Test", [
-            "Variance Threshold", 
-            "Correlation Coefficient", 
-            "Chi-Square Test", 
-            "Mutual Information"
-        ])
-
-        if stat_choice == "Variance Threshold":
-            variances = X_numeric.var()
-            st.bar_chart(variances)
-            threshold = st.number_input("Variance Threshold", value=0.01, format="%.4f")
-            selected_features = variances[variances > threshold].index.tolist()
-
-        elif stat_choice == "Correlation Coefficient":
-            correlations = X_numeric.corrwith(y_encoded).abs().sort_values(ascending=False)
-            fig, ax = plt.subplots()
-            sns.barplot(x=correlations.values, y=correlations.index, palette="viridis", ax=ax)
-            st.pyplot(fig)
-            top_k = st.slider("Select Top K Features", 1, len(correlations), min(5, len(correlations)))
-            selected_features = correlations.head(top_k).index.tolist()
-
-        elif stat_choice == "Chi-Square Test":
-            from sklearn.feature_selection import chi2, SelectKBest
-            # Chi-square محتاج بيانات غير سالبة
-            X_pos = X_encoded.clip(lower=0) 
-            scores, p_values = chi2(X_pos, y_encoded)
-            chi_df = pd.Series(scores, index=X_encoded.columns).sort_values(ascending=False)
-            st.bar_chart(chi_df)
-            top_k = st.slider("Select Top K (Chi2)", 1, len(chi_df), 5)
-            selected_features = chi_df.head(top_k).index.tolist()
-
-        elif stat_choice == "Mutual Information":
-            from sklearn.feature_selection import mutual_info_classif, mutual_info_regression
-            # اختيار الاختبار بناءً على نوع الـ Target
-            is_regression = y.dtype != 'object' and y.nunique() > 10
-            mi_func = mutual_info_regression if is_regression else mutual_info_classif
-            mi_scores = mi_func(X_encoded, y_encoded)
-            mi_df = pd.Series(mi_scores, index=X_encoded.columns).sort_values(ascending=False)
-            st.bar_chart(mi_df)
-            top_k = st.slider("Select Top K (Mutual Info)", 1, len(mi_df), 5)
-            selected_features = mi_df.head(top_k).index.tolist()
-
-        if st.button("Update Dataset with Filtered Features"):
-            st.session_state["data"] = df[selected_features + [target_col]]
-            st.success(f"Kept {len(selected_features)} features!")
-            st.rerun()
-
-    # --- 2. WRAPPER METHODS (RFE) ---
-    elif method_type == "Wrapper (RFE)":
+    if method_type == "Wrapper (RFE)":
         st.info("RFE recursively removes least important features using a model.")
-        n_features = st.slider("Features to Select", 1, len(X_encoded.columns), 5)
+        n_features = st.slider("Features to Select", 1, len(X_numeric.columns), min(5, len(X_numeric.columns)))
+        
         if st.button("Run RFE"):
             model = LogisticRegression(max_iter=1000)
             selector = RFE(model, n_features_to_select=n_features)
-            selector = selector.fit(X_encoded, y_encoded)
-            selected_features = X_encoded.columns[selector.support_].tolist()
-            st.write("✅ Selected:", selected_features)
+            selector = selector.fit(X_numeric, y)
+            selected_features = X_numeric.columns[selector.support_].tolist()
+            
+            st.write(" Selected:", selected_features)
             st.session_state["data"] = df[selected_features + [target_col]]
             st.rerun()
 
-    # --- 3. PCA ---
     elif method_type == "Embedded/PCA":
-        n_comp = st.slider("Number of Components", 1, len(X_numeric.columns), 2)
+        n_comp = st.slider("Number of Components", 1, len(X_numeric.columns), min(2, len(X_numeric.columns)))
+        
         if st.button("Apply PCA"):
             pca = PCA(n_components=n_comp)
             pca_res = pca.fit_transform(X_numeric)
             pca_df = pd.DataFrame(pca_res, columns=[f"PC{i+1}" for i in range(n_comp)])
-            # Explained Variance Plot
+            
             fig, ax = plt.subplots()
             ax.plot(range(1, n_comp+1), np.cumsum(pca.explained_variance_ratio_), marker='o')
             ax.set_title("Cumulative Explained Variance")
             st.pyplot(fig)
+            
             st.session_state["data"] = pd.concat([pca_df, y.reset_index(drop=True)], axis=1)
             st.success("Dataset replaced with PCA components!")
             st.rerun()
-# --- 5. SAMPLING (SMOTE) ---
+            
+            
 with tabs[4]:
     st.subheader(" Handling Imbalanced Data")
     sampling_target = st.selectbox("Select Target for Sampling", df.columns, key="smote_target")
